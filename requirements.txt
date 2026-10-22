@@ -1,0 +1,6 @@
+requests
+rich
+pymongo
+python-dotenv
+pyyaml
+plyer

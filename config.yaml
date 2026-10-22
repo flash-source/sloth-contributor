@@ -1,0 +1,13 @@
+poll_interval_minutes: 15
+
+# Add the repositories and labels you want to watch
+repos:
+  - owner: "vercel"
+    name: "next.js"
+    labels:
+      - "good first issue"
+      - "help wanted"
+  - owner: "microsoft"
+    name: "vscode"
+    labels:
+      - "good first issue"
