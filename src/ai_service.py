@@ -22,25 +22,27 @@ class AIService:
             return ""
 
     def suggest_files(self, title, body):
-        """Step 1: AI suggests which files to look at."""
+        """AI suggests which files to look at."""
         clean_body = body[:1500] if body else "No description."
-        prompt = f"""You are an expert open-source maintainer. Read this issue and suggest a JSON array of file paths that are likely causing the bug or need to be updated.
+        prompt = f"""Read this GitHub issue and suggest a JSON array of file paths likely causing the bug.
         Issue Title: {title}
         Issue Body: {clean_body}
-        
-        Output ONLY a valid JSON array of strings. Example: ["src/App.js", "config.json"]. If unsure, output []. Do not add markdown formatting."""
+        Output ONLY a JSON array of strings. Example: ["src/App.js", "config.json"]. If unsure, output []."""
         
         response = self._call_ollama(prompt)
         
         try:
-            clean_response = re.sub(r'```json\n?|```', '', response).strip()
-            return json.loads(clean_response)
+            match = re.search(r'\[.*\]', response, re.DOTALL)
+            if match:
+                json_str = match.group(0)
+                return json.loads(json_str)
+            return []
         except json.JSONDecodeError:
-            console.print("[dim]⚠️ AI failed to return valid JSON for files. Skipping code fetch.[/dim]")
+            console.print("[dim]⚠︎ AI failed to return valid file paths. Skipping code fetch.[/dim]")
             return []
 
     def analyze_with_context(self, title, body, code_context):
-        """Step 2: AI reads the issue AND the actual code to give the final Hunch."""
+        """AI reads the issue AND the actual code to give the final Hunch."""
         clean_body = body[:1500] if body else "No description."
         
         prompt = f"""You are an expert open-source contributor. Analyze this GitHub issue AND the provided code context to give a 'Contributor's Hunch'.
@@ -53,13 +55,13 @@ class AIService:
         -----------------------------
         
         Output your response in Markdown with these exact headers:
-        ### 🎯 The Core Problem
+        ### ? The Core Problem
         (1-2 sentences explaining what is actually broken)
         
-        ### 📂 Where to Look
+        ### ⫶☰ Where to Look
         (Reference the specific files provided in the context)
         
-        ### 🛠️ Suggested Fix
+        ### 🌣 Suggested Fix
         (A specific, code-level strategy to solve it)
         """
 
