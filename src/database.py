@@ -10,7 +10,7 @@ class Database:
 
     def _test_connection(self):
         self.client.admin.command('ping')
-        print("Successfully connected to MongoDB Atlas!")
+        print("♡ Successfully connected to MongoDB Atlas!")
 
     def is_issue_analyzed(self, issue_id):
         return self.issues_collection.find_one({"issue_id": issue_id}) is not None
@@ -26,4 +26,4 @@ class Database:
             "analyzed_at": datetime.now(timezone.utc)
         }
         self.issues_collection.insert_one(document)
-        print(f"Saved '{issue_data['title']}' to MongoDB.")
+        print(f"⤓ Saved '{issue_data['title']}' to MongoDB.")

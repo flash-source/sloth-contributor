@@ -25,5 +25,5 @@ class FileFetcher:
                 console.print(f"[dim]️ Could not fetch {file_path} (Status: {response.status_code})[/dim]")
                 return None
         except Exception as e:
-            console.print(f"[dim]⚠️ Error fetching {file_path}: {e}[/dim]")
+            console.print(f"[dim]⚠︎ Error fetching {file_path}: {e}[/dim]")
             return None
