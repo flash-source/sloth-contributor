@@ -13,7 +13,7 @@ class SessionManager:
         session = self.sessions_collection.find_one({"is_active": True})
         
         if not session:
-            console.print("\n[bold yellow]ωᥱℓᥴ𐐫mᥱ!༄˖°.🍂.ೃ࿔*:･🎃[/bold yellow]")
+            console.print("\n[bold yellow]╰┈➤ 𝖜𝖊𝖑𝖈𝖔𝖒𝖊!༄˖°.🍂.ೃ࿔[/bold yellow]")
             console.print("[dim]Let's set up your first watching session.[/dim]\n")
             return self.create_new_session()
         
@@ -73,8 +73,9 @@ class SessionManager:
                 self.sessions_collection.update_one({"_id": sessions[idx]["_id"]}, {"$set": {"is_active": True}})
                 console.print(f"[bold green]✔ Switched to: {sessions[idx]['owner']}/{sessions[idx]['name']}[/bold green]\n")
                 return sessions[idx]
+            else:
+                console.print("[red]Invalid choice.[/red]")
         except ValueError:
-            pass
+            console.print("[red]Please enter a valid number.[/red]")
             
-        console.print("[red]Invalid choice.[/red]")
         return None

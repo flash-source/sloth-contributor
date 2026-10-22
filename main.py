@@ -11,6 +11,7 @@ from src.github_service import GitHubService
 from src.ai_service import AIService
 from src.notifier import send_desktop_notification
 from src.session_manager import SessionManager
+from src.debug_utils import test_github_api
 
 console = Console()
 
@@ -20,7 +21,7 @@ def run_scan_for_session(session, db, github, ai):
     name = session["name"]
     labels = session["labels"]
     
-    console.print(f"\n[bold blue]ᯤ Scanning {owner}/{name} for {labels}...[/bold blue]")
+    console.print(f"\n[bold blue]⌯✈︎ Scanning {owner}/{name} for {labels}...[/bold blue]")
     issues = github.fetch_issues(owner, name, labels)
     
     new_issues_found = 0
@@ -67,9 +68,8 @@ def main():
     ai = AIService(env["ollama_url"], env["model_name"])
     session_mgr = SessionManager(db)
     
-    console.print(Panel.fit("[bold green]꩜ SlothContributor ꩜[/bold green]\nLocal AI OSS Issue Sniper", border_style="green"))
+    console.print(Panel.fit("[bold green]⋆౨ৎ˚⟡˖ ࣪SlothContributor ⋆౨ৎ˚⟡˖ ࣪[/bold green]\nLocal AI OSS Issue Sniper", border_style="green"))
     
-    # Interactive Session Selection
     active_session = session_mgr.get_active_session()
     if not active_session:
         return
@@ -92,13 +92,17 @@ def main():
         run_scan_for_session(active_session, db, github, ai)
         
         while True:
-            action = Prompt.ask("\n[bold]Next Action?[/bold] [1] Switch Session, [2] Scan Again, [3] Exit", choices=["1", "2", "3"], default="3")
+            action = Prompt.ask("\n[bold]Next Action?[/bold] [1] Switch Session, [2] Scan Again, [3] Exit", choices=["1", "2", "3", "4"], default="4")
             if action == "1":
                 active_session = session_mgr.list_sessions() or active_session
             elif action == "2":
                 run_scan_for_session(active_session, db, github, ai)
+            elif action == "3":
+                env = get_env_vars()
+                test_github_api(active_session["owner"], active_session["name"], 
+                            active_session["labels"], env["github_token"])
             else:
-                console.print("[bold green]Stay lazy, contribute smartly! 🦥[/bold green]")
+                console.print("[bold green]Stay lazy, contribute smartly! ᶻ𝗓𐰁 [/bold green]")
                 break
 
 if __name__ == "__main__":
