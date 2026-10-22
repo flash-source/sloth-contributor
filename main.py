@@ -35,13 +35,29 @@ def run_single_scan():
         for issue in issues:
             if db.is_issue_analyzed(issue["id"]):
                 continue 
-            
-            console.print(f"\n[bold cyan]📌 NEW Sniped Issue: {issue['title']}[/bold cyan]")
+    
+            console.print(f"\n[bold cyan] NEW Sniped Issue: {issue['title']}[/bold cyan]")
             console.print(f"[dim]Repo: {owner}/{name} | Link: {issue['html_url']}[/dim]")
-        
-            hunch = ai.analyze_issue(issue["title"], issue.get("body", ""))
-            console.print(Panel(Markdown(hunch), title="Contributor's Hunch", border_style="bright_magenta"))
+            
 
+            suggested_files = ai.suggest_files(issue["title"], issue.get("body", ""))
+            
+            code_context = "No specific code context fetched."
+            if suggested_files:
+                console.print(f"[dim]🔍 AI suggested checking: {suggested_files}[/dim]")
+
+                fetched_codes = []
+                for file_path in suggested_files[:3]: # Limit to 3 files to save time/tokens
+                    content = github.fetcher.get_file_content(owner, name, file_path)
+                    if content:
+                        fetched_codes.append(f"--- FILE: {file_path} ---\n{content}")
+                
+                if fetched_codes:
+                    code_context = "\n\n".join(fetched_codes)
+            
+            hunch = ai.analyze_with_context(issue["title"], issue.get("body", ""), code_context)
+            console.print(Panel(Markdown(hunch), title="Contributor's Hunch (Code-Aware)", border_style="bright_magenta"))
+            
             issue["repo"] = f"{owner}/{name}"
             db.save_issue(issue, hunch)
             
@@ -51,7 +67,7 @@ def run_single_scan():
             )
             
             new_issues_found += 1
-            time.sleep(1) 
+            time.sleep(2) 
             
     console.print(f"\n[bold]✅ Scan Complete: Found and analyzed {new_issues_found} new issues.[/bold]")
 

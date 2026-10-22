@@ -1,5 +1,6 @@
 import requests
 from rich.console import Console
+from src.file_fetcher import FileFetcher
 
 console = Console()
 
@@ -8,6 +9,7 @@ class GitHubService:
         self.headers = {"Accept": "application/vnd.github.v3+json"}
         if token:
             self.headers["Authorization"] = f"token {token}"
+        self.fetcher = FileFetcher(token)
 
     def fetch_issues(self, owner, repo, labels):
         url = f"https://api.github.com/repos/{owner}/{repo}/issues"
