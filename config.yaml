@@ -1,5 +1,5 @@
 poll_interval_minutes: 15
-
+max_issues_per_scan: 3 
 # Add the repositories and labels you want to watch
 repos:
   - owner: "vercel"

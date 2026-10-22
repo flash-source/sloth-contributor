@@ -15,21 +15,25 @@ from src.debug_utils import test_github_api
 
 console = Console()
 
-def run_scan_for_session(session, db, github, ai):
+def run_scan_for_session(session, db, github, ai, max_issues=3):
     """Runs a scan for a specific session."""
     owner = session["owner"]
     name = session["name"]
     labels = session["labels"]
     
-    console.print(f"\n[bold blue]⌯✈︎ Scanning {owner}/{name} for {labels}...[/bold blue]")
+    console.print(f"\n[bold blue]⌯✈︎  Scanning {owner}/{name} for {labels}...[/bold blue]")
     issues = github.fetch_issues(owner, name, labels)
     
     new_issues_found = 0
     for issue in issues:
+        if new_issues_found >= max_issues:
+            console.print(f"\n[bold yellow]⦸ Reached limit of {max_issues} new issues for this scan. Stopping.[/bold yellow]")
+            break
+
         if db.is_issue_analyzed(issue["id"]):
             continue
         
-        console.print(f"\n[bold cyan]ᝰ.ᐟ NEW Sniped Issue: {issue['title']}[/bold cyan]")
+        console.print(f"\n[bold cyan]𖤣 NEW Sniped Issue: {issue['title']}[/bold cyan]")
         console.print(f"[dim]Link: {issue['html_url']}[/dim]")
         
         suggested_files = ai.suggest_files(issue["title"], issue.get("body", ""))
