@@ -96,16 +96,12 @@ def main():
         run_scan_for_session(active_session, db, github, ai)
         
         while True:
-            action = Prompt.ask("\n[bold]Next Action?[/bold] [1] Switch Session, [2] Scan Again, [3] Exit", choices=["1", "2", "3", "4"], default="4")
+            action = Prompt.ask("\n[bold]Next Action?[/bold] [1] Switch Session, [2] Scan Again, [3] Exit", choices=["1", "2", "3"], default="3")
             if action == "1":
                 active_session = session_mgr.list_sessions() or active_session
             elif action == "2":
                 run_scan_for_session(active_session, db, github, ai)
             elif action == "3":
-                env = get_env_vars()
-                test_github_api(active_session["owner"], active_session["name"], 
-                            active_session["labels"], env["github_token"])
-            else:
                 console.print("[bold green]Stay lazy, contribute smartly! ᶻ𝗓𐰁 [/bold green]")
                 break
 
