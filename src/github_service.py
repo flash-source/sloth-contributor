@@ -14,14 +14,19 @@ class GitHubService:
     def fetch_issues(self, owner, repo, labels):
         url = f"https://api.github.com/repos/{owner}/{repo}/issues"
         params = {
-            "labels": ",".join(labels),
             "state": "open",
             "sort": "created",
             "direction": "desc",
             "per_page": 10
         }
+
+        if labels:
+            params["labels"] = ",".join(labels)
+            label_text = ", ".join(labels)
+        else:
+            label_text = "All Issues"
         
-        console.print(f"[bold blue]Scanning {owner}/{repo} for {labels}...[/bold blue]")
+        console.print(f"[bold blue]⌯✈︎  Scanning {owner}/{repo} for {label_text}...[/bold blue]")
         
         try:
             response = requests.get(url, headers=self.headers, params=params, timeout=30)

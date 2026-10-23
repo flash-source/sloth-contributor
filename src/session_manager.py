@@ -9,32 +9,42 @@ class SessionManager:
         self.sessions_collection = self.db.db["user_sessions"]
 
     def get_active_session(self):
-        """Fetches the last active session, or prompts to create one."""
+        """Fetches the last active session, or shows the menu."""
         session = self.sessions_collection.find_one({"is_active": True})
         
         if not session:
-            console.print("\n[bold yellow]╰┈➤ 𝖜𝖊𝖑𝖈𝖔𝖒𝖊!༄˖°.🍂.ೃ࿔[/bold yellow]")
+            console.print("\n[bold yellow]╰┈➤ 𝖜𝖊𝖑𝖔𝖒𝖊!༄˖°.🍂.ೃ࿔[/bold yellow]")
             console.print("[dim]Let's set up your first watching session.[/dim]\n")
             return self.create_new_session()
         
-        console.print(f"\n[bold green]▶ Resumed Session:[/bold green] [cyan]{session['owner']}/{session['name']}[/cyan] (Labels: {', '.join(session['labels'])})")
+        label_text = ', '.join(session['labels']) if session['labels'] else 'All Issues'
+        console.print(f"\n[bold green]▶ Resumed Session:[/bold green] [cyan]{session['owner']}/{session['name']}[/cyan] (Labels: {label_text})")
+        
         if Confirm.ask("Use this session?", default=True):
             return session
         
-        return self.create_new_session()
+        # If select 'n', show the interactive menu!
+        console.print("\n[bold]Choose an action:[/bold]")
+        return self.list_sessions()
 
     def create_new_session(self):
         """Interactively creates a new watching session."""
-        console.print("\n[bold]✚ Create New Watching Session[/bold]")
+        console.print("\n[bold]✚  Create New Watching Session[/bold]")
         
-        owner = Prompt.ask("GitHub Repo Owner (e.g., 'vercel', 'facebook')")
-        name = Prompt.ask("Repository Name (e.g., 'next.js', 'react')")
+        owner = Prompt.ask("GitHub Repo Owner (e.g., 'anthropics', 'openclaw')")
+        name = Prompt.ask("Repository Name (e.g., 'skills', 'clawscan')")
         
         labels_input = Prompt.ask(
-            "Labels to watch (comma-separated, e.g., 'good first issue, help wanted')",
+            "Labels to watch (comma-separated, or 'all' to fetch all issues)",
             default="good first issue"
         )
-        labels = [label.strip() for label in labels_input.split(",") if label.strip()]
+        
+        # Handle 'all', 'any', 'n/a', or '*' to fetch everything
+        if labels_input.lower() in ["all", "any", "n/a", "*"]:
+            labels = []
+            console.print("[dim]No specific labels. Will fetch all recent open issues.[/dim]")
+        else:
+            labels = [label.strip() for label in labels_input.split(",") if label.strip()]
        
         self.sessions_collection.update_many({}, {"$set": {"is_active": False}})
         
