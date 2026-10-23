@@ -27,7 +27,7 @@ def run_scan_for_session(session, db, github, ai, max_issues=3):
     new_issues_found = 0
     for issue in issues:
         if new_issues_found >= max_issues:
-            console.print(f"\n[bold yellow]⦸ Reached limit of {max_issues} new issues for this scan. Stopping.[/bold yellow]")
+            console.print(f"\n[yellow]⦸[/yellow][bold yellow] Reached limit of {max_issues} new issues for this scan. Stopping.[/bold yellow]")
             break
 
         if db.is_issue_analyzed(issue["id"]):
@@ -84,14 +84,14 @@ def main():
     
     if args.watch:
         interval = 15 * 60 # 15 minutes
-        console.print(f"[bold yellow]⏲ Watch mode active. Polling every 15 mins. Press Ctrl+C to stop.[/bold yellow]")
+        console.print(f"[yellow]⏱[/yellow][bold yellow] Watch mode active. Polling every 15 mins. Press Ctrl+C to stop.[/bold yellow]")
         try:
             while True:
                 run_scan_for_session(active_session, db, github, ai)
                 console.print(f"[dim]ᶻ𝗓𐰁 Sleeping...[/dim]")
                 time.sleep(interval)
         except KeyboardInterrupt:
-            console.print("\n[bold yellow]⏻ Watch mode stopped.[/bold yellow]")
+            console.print("\n[yellow]⏻[/yellow][bold yellow] Watch mode stopped.[/bold yellow]")
     else:
         run_scan_for_session(active_session, db, github, ai)
         

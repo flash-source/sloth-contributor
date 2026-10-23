@@ -58,10 +58,10 @@ class AIService:
         ### ? The Core Problem
         (1-2 sentences explaining what is actually broken)
         
-        ### ⫶☰ Where to Look
+        ### ☰  Where to Look
         (Reference the specific files provided in the context)
         
-        ### 🌣 Suggested Fix
+        ### ⚒ Suggested Fix
         (A specific, code-level strategy to solve it)
         """
 
