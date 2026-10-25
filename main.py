@@ -47,8 +47,7 @@ def run_scan_for_session(session, db, github, ai, max_issues=3):
                 used_path = file_path
                 
                 if not content:
-                    filename = file_path.split("/")[-1] 
-                    found = github.fetcher.find_file_in_tree(owner, name, filename)
+                    found = github.fetcher.find_file_in_tree(owner, name, file_path)
                     if found:
                         used_path, content = found
                         

@@ -35,7 +35,8 @@ class AIService:
             match = re.search(r'\[.*\]', response, re.DOTALL)
             if match:
                 json_str = match.group(0)
-                return json.loads(json_str)
+                files = json.loads(json_str)
+                return [f for f in files if isinstance(f, str)] if isinstance(files, list) else []
             return []
         except json.JSONDecodeError:
             console.print("[dim]⚠︎ AI failed to return valid file paths. Skipping code fetch.[/dim]")
