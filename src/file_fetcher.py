@@ -1,5 +1,5 @@
+import time
 import requests
-import base64
 from rich.console import Console
 
 console = Console()
@@ -12,49 +12,49 @@ class FileFetcher:
         
         self._tree_cache = {} 
 
-    def get_file_content(self, owner, repo, file_path, branch="main"):
-        """Fetches the raw content of a file from GitHub."""
+    def get_file_content(self, owner, repo, file_path):
+        """Fetches the raw content of a specific file from the default branch."""
         url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}"
         
         try:
-            response = requests.get(url, headers=self.headers, timeout=10)
+            response = requests.get(url, headers=self.headers, timeout=30)
             if response.status_code == 200:
-                data = response.json()
-            
-                if data.get("encoding") == "base64" and data.get("content"):
-                    return base64.b64decode(data["content"]).decode("utf-8")
-            else:
-                console.print(f"[dim]️ Could not fetch {file_path} (Status: {response.status_code})[/dim]")
-                return None
+                import base64
+                return base64.b64decode(response.json()["content"]).decode("utf-8")
+            return None
         except Exception as e:
-            console.print(f"[dim]⚠︎ Error fetching {file_path}: {e}[/dim]")
+            console.print(f"[dim]⚠︎ Could not fetch {file_path} (Status: {response.status_code if 'response' in locals() else 'Error'})[/dim]")
             return None
 
     def find_file_in_tree(self, owner, repo, target_path, branch="HEAD"):
         """Fallback: Searches the repo's file tree to find a file by path/name if the exact path fails."""
         cache_key = f"{owner}/{repo}"
-
-        if cache_key not in self._tree_cache:
+        
+        cached = self._tree_cache.get(cache_key)
+        if cached is None or time.time() - cached[0] > 600:
             url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{branch}?recursive=1"
             try:
                 response = requests.get(url, headers=self.headers, timeout=30)
-                if response.status_code == 200:
-                    data = response.json()
-                    if data.get("truncated"):
-                        console.print(f"[dim]⚠︎ Tree truncated for {owner}/{repo}. Fallback may miss files.[/dim]")
-                    self._tree_cache[cache_key] = data.get("tree", [])
-                else:
-                    self._tree_cache[cache_key] = []
             except Exception as e:
-                console.print(f"[dim]⚠︎ Tree lookup failed: {e}[/dim]")
+                console.print(f"[dim]️⚠︎ Tree lookup failed: {e}[/dim]")
                 return None
+            
+            if response.status_code != 200:
+                console.print(f"[dim]⚠︎ Tree API returned {response.status_code}. Skipping cache.[/dim]")
+                return None
+                
+            data = response.json()
+            if data.get("truncated"):
+                console.print(f"[dim]️ Tree truncated for {owner}/{repo}. Fallback may miss files.[/dim]")
+            
+            self._tree_cache[cache_key] = (time.time(), data.get("tree", []))
 
-        tree = self._tree_cache[cache_key]
+        tree = self._tree_cache[cache_key][1]
         if not tree:
             return None
 
         wanted = target_path.strip("/").split("/")
-        best, best_score = None, 0
+        best, best_score, tie_count = None, 0, 0
 
         for item in tree:
             if item.get("type") != "blob":
@@ -72,11 +72,12 @@ class FileFetcher:
 
             if score > best_score:
                 best, best_score = item["path"], score
+                tie_count = 1
+            elif score == best_score and score > 0:
+                tie_count += 1
 
-        if best:
-            console.print(f"[dim]Tree fallback matched: {best} (score: {best_score})[/dim]")
+        if best and tie_count == 1:
+            console.print(f"[dim] Tree fallback matched: {best} (score: {best_score})[/dim]")
             return best, self.get_file_content(owner, repo, best)
 
         return None
-
-        
