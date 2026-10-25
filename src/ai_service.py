@@ -27,7 +27,7 @@ class AIService:
         prompt = f"""Read this GitHub issue and suggest a JSON array of file paths likely causing the bug.
         Issue Title: {title}
         Issue Body: {clean_body}
-        Output ONLY a JSON array of strings. Example: ["src/App.js", "config.json"]. If unsure, output []."""
+        Output ONLY a JSON array of strings. Example: ["src/utils/auth.ts", "backend/server.py"]. If unsure, output []."""
         
         response = self._call_ollama(prompt)
         

@@ -44,14 +44,22 @@ def run_scan_for_session(session, db, github, ai, max_issues=3):
             fetched_codes = []
             for file_path in suggested_files[:3]:
                 content = github.fetcher.get_file_content(owner, name, file_path)
+                
+                if not content:
+                    filename = file_path.split("/")[-1] 
+                    content = github.fetcher.find_file_in_tree(owner, name, filename)
+                    
                 if content:
-                    fetched_codes.append(f"--- FILE: {file_path} ---\n{content[:1000]}...") # Truncate for prompt limits
+                    fetched_codes.append(f"--- FILE: {file_path} ---\n{content[:4000]}...")
             
             if fetched_codes:
                 code_context = "\n\n".join(fetched_codes)
+                panel_title = "Contributor's Hunch (Code-Aware)"
+            else:
+                panel_title = "Contributor's Hunch (Text-Only Fallback)"
         
         hunch = ai.analyze_with_context(issue["title"], issue.get("body", ""), code_context)
-        console.print(Panel(Markdown(hunch), title="Contributor's Hunch (Code-Aware)", border_style="bright_magenta"))
+        console.print(Panel(Markdown(hunch), title=panel_title, border_style="bright_magenta"))
         
         issue["repo"] = f"{owner}/{name}"
         db.save_issue(issue, hunch)
