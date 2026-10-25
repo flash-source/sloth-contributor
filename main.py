@@ -44,13 +44,16 @@ def run_scan_for_session(session, db, github, ai, max_issues=3):
             fetched_codes = []
             for file_path in suggested_files[:3]:
                 content = github.fetcher.get_file_content(owner, name, file_path)
+                used_path = file_path
                 
                 if not content:
                     filename = file_path.split("/")[-1] 
-                    content = github.fetcher.find_file_in_tree(owner, name, filename)
-                    
+                    found = github.fetcher.find_file_in_tree(owner, name, filename)
+                    if found:
+                        used_path, content = found
+                        
                 if content:
-                    fetched_codes.append(f"--- FILE: {file_path} ---\n{content[:4000]}...")
+                    fetched_codes.append(f"--- FILE: {used_path} ---\n{content[:4000]}...")
             
             if fetched_codes:
                 code_context = "\n\n".join(fetched_codes)

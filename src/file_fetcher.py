@@ -28,7 +28,7 @@ class FileFetcher:
             console.print(f"[dim]⚠︎ Error fetching {file_path}: {e}[/dim]")
             return None
 
-    def find_file_in_tree(self, owner, repo, target_filename, branch="HEAD"): # Changed "main" to "HEAD"
+    def find_file_in_tree(self, owner, repo, target_filename, branch="HEAD"):
         """Fallback: Searches the repo's file tree to find a file by name if the exact path fails."""
         url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{branch}?recursive=1"
         
@@ -43,9 +43,9 @@ class FileFetcher:
                 tree = data.get("tree", [])
                 
                 for item in tree:
-                    if item["path"].endswith(target_filename):
+                    if item["path"].split("/")[-1] == target_filename:
                         console.print(f"[dim]Tree fallback matched: {item['path']}[/dim]")
-                        return self.get_file_content(owner, repo, item["path"])
+                        return item["path"], self.get_file_content(owner, repo, item["path"])
             return None
         except Exception as e:
             console.print(f"[dim]⚠︎ Tree lookup failed: {e}[/dim]")
