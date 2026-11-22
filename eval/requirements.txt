@@ -1,0 +1,6 @@
+datasets
+transformers
+accelerate
+peft
+torch
+requests
