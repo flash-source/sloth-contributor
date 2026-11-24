@@ -17,7 +17,7 @@ import re
 from collections import defaultdict
 
 DIFF_BLOCK = re.compile(r"(?m)^(?=diff --git )")
-DIFF_HEADER = re.compile(r"^diff --git a/(\S+) b/(\S+)\s*$")
+DIFF_HEADER = re.compile(r"^diff --git a/(.+?) b/(.+?)\s*$")  # paths may contain spaces
 
 
 def is_test_file(path):
@@ -79,6 +79,8 @@ def build_splits(rows, test_frac=0.2, seed=0, max_per_repo=40, min_files=1, max_
     test_repos, train_repos = set(repos[:n_test]), set(repos[n_test:])
     train = [x for r in sorted(train_repos) for x in by_repo[r]]
     test = [x for r in sorted(test_repos) for x in by_repo[r]]
+    rng.shuffle(train)  # mixed repos, so the first N test rows (generate.py --n) are a fair sample
+    rng.shuffle(test)
     stats.update(repos=len(repos), train_repos=len(train_repos), test_repos=len(test_repos),
                  train_examples=len(train), test_examples=len(test))
     return train, test, dict(stats), sorted(train_repos), sorted(test_repos)
